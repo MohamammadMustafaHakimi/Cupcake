@@ -163,7 +163,7 @@
 *
 */
 
--> The pair composable
+-> The pair composable: Pair takes two generic type parameters. In this case, they're both of type Int.
 -> The divider composable
 -> reusing entire screens
 -> val formatter = SimpleDateFormat("E MMM d", Locale.getDefault())
@@ -201,3 +201,4 @@
 -> the composable() function
 -> purpose of val context = LocalContext.current???
 -> why some methods use viewModel to get accessed, and some use the state
+-> does the back button automagically go back to the previous screen in the stack?
