@@ -15,6 +15,7 @@
  */
 package com.example.cupcake
 
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -46,7 +47,9 @@ import com.example.cupcake.data.DataSource
 import com.example.cupcake.ui.OrderSummaryScreen
 import com.example.cupcake.ui.SelectOptionScreen
 import com.example.cupcake.ui.StartOrderScreen
+import javax.security.auth.Subject
 import kotlin.String
+import android.content.Intent
 
 // enum class for defining the routes
 enum class CupcakeScreen() {
@@ -89,12 +92,22 @@ fun CupcakeApp(
     viewModel: OrderViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
-    private fun cancelOrderAndNavigateToStart(
+     fun cancelOrderAndNavigateToStart(
         viewModel: OrderViewModel,
         navController: NavHostController
     ) {
         viewModel.resetOrder()
         navController.popBackStack(CupcakeScreen.Start.name, inclusive = false) // what is the purpose of the inclusive boolean?
+    }
+
+     fun shareOrder(context: Context, subject: String, summary: String) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, summary)
+        }
+         val chooser = Intent.createChooser(intent, context.getString(R.string.new_cupcake_order))
+         context.startActivity(chooser)
     }
 
 
@@ -154,13 +167,17 @@ fun CupcakeApp(
             }
 
             composable(route = CupcakeScreen.Summary.name) {
+                val context = LocalContext.current
                 OrderSummaryScreen(
                     orderUiState = uiState,
                     onCancelButtonClicked = {
                         cancelOrderAndNavigateToStart(viewModel, navController)
                     },
+//                    onSendButtonClicked = { subject: String, summary: String ->
+//
+//                    },
                     onSendButtonClicked = { subject: String, summary: String ->
-
+                        shareOrder(context, subject = subject, summary = summary)
                     },
                     modifier = Modifier.fillMaxHeight()
                 )
