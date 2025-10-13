@@ -202,3 +202,4 @@
 -> purpose of val context = LocalContext.current???
 -> why some methods use viewModel to get accessed, and some use the state
 -> does the back button automagically go back to the previous screen in the stack?
+-> how to share an screen shot of the app to using intent?

@@ -50,13 +50,15 @@ import com.example.cupcake.ui.StartOrderScreen
 import javax.security.auth.Subject
 import kotlin.String
 import android.content.Intent
+import androidx.annotation.StringRes
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 // enum class for defining the routes
-enum class CupcakeScreen() {
-    Start,
-    Flavor,
-    Pickup,
-    Summary
+enum class CupcakeScreen(@StringRes val title: Int) {
+    Start(title = R.string.app_name),
+    Flavor(title = R.string.choose_flavor),
+    Pickup(title = R.string.choose_flavor),
+    Summary(title = R.string.order_summary)
 }
 
 /**
@@ -64,12 +66,13 @@ enum class CupcakeScreen() {
  */
 @Composable
 fun CupcakeAppBar(
+    currentScreen: CupcakeScreen,
     canNavigateBack: Boolean,
-    navigateUp: () -> Unit,
+    navigateUp: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Text(stringResource(id = R.string.app_name)) },
+        title = { Text(stringResource(currentScreen.title)) },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -92,6 +95,10 @@ fun CupcakeApp(
     viewModel: OrderViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
+    val backStackEntry by navController.currentBackStackEntryAsState() // what does this do?
+    val currentScreen = CupcakeScreen.valueOf(
+        backStackEntry?.destination?.route ?: CupcakeScreen.Start.name // how does this work???
+    )
      fun cancelOrderAndNavigateToStart(
         viewModel: OrderViewModel,
         navController: NavHostController
@@ -114,8 +121,9 @@ fun CupcakeApp(
     Scaffold(
         topBar = {
             CupcakeAppBar(
-                canNavigateBack = false,
-                navigateUp = { /* TODO: implement back navigation */ }
+                currentScreen = currentScreen,
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() }
             )
         }
     ) { innerPadding ->
@@ -126,7 +134,7 @@ fun CupcakeApp(
             modifier = Modifier.padding(innerPadding)
         ) {
             /* the content */
-            composable(route = CupcakeScreen.Start.name) {
+            composable(route = CupcakeScreen.Start.name) { // the .name is an inhereted property of ENUM classes
                 StartOrderScreen(
                     quantityOptions = DataSource.quantityOptions,
                     onNextButtonClicked = {
