@@ -92,19 +92,19 @@ fun CupcakeAppBar(
 
 @Composable
 fun CupcakeApp(
-    viewModel: OrderViewModel = viewModel(),
-    navController: NavHostController = rememberNavController()
+    viewModel: OrderViewModel = viewModel(), // instance of OrdeViewModel holding UI state and business logic
+    navController: NavHostController = rememberNavController() // navigation controller to manage screen navigation, defaulted to rememberNavController() for Compose navigation
 ) {
-    val backStackEntry by navController.currentBackStackEntryAsState() // what does this do?
-    val currentScreen = CupcakeScreen.valueOf(
-        backStackEntry?.destination?.route ?: CupcakeScreen.Start.name // how does this work???
+    val backStackEntry by navController.currentBackStackEntryAsState() // retrieves the current navigation back stack entry as a Compose State
+    val currentScreen = CupcakeScreen.valueOf( // reads the route of the current destination from the navigation back stack entry
+        backStackEntry?.destination?.route ?: CupcakeScreen.Start.name // if it's null (e.g at start), defaults to the Start screen route; uses the enum CupcakeScreen.valueOf to convert the route string into a typed enum for safer usage
     )
      fun cancelOrderAndNavigateToStart(
         viewModel: OrderViewModel,
         navController: NavHostController
     ) {
         viewModel.resetOrder()
-        navController.popBackStack(CupcakeScreen.Start.name, inclusive = false) // what is the purpose of the inclusive boolean?
+        navController.popBackStack(CupcakeScreen.Start.name, inclusive = false) // pops the naviagtion back stack to the Start screen. without removing the Start screen itself; inclusive = false, means that the Start screen should not be poped off
     }
 
      fun shareOrder(context: Context, subject: String, summary: String) {
@@ -118,19 +118,19 @@ fun CupcakeApp(
     }
 
 
-    Scaffold(
+    Scaffold( // provides a common UI structure with a top app bar
         topBar = {
             CupcakeAppBar(
                 currentScreen = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() }
+                canNavigateBack = navController.previousBackStackEntry != null, // check if there is a previous back stack entry
+                navigateUp = { navController.navigateUp() } // handles back button navigation
             )
         }
     ) { innerPadding ->
-        val uiState by viewModel.uiState.collectAsState()
+        val uiState by viewModel.uiState.collectAsState() // observes the current UI state from the viewmodel as a compose state, triggering recompostion on charge
         NavHost(
-            navController = navController,
-            startDestination = CupcakeScreen.Start.name,
+            navController = navController, // navController: Controls navigation state and actions.
+            startDestination = CupcakeScreen.Start.name, // the route name of the initial screen shown, here it's Start
             modifier = Modifier.padding(innerPadding)
         ) {
             /* the content */

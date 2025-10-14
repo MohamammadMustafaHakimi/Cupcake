@@ -203,3 +203,63 @@
 -> why some methods use viewModel to get accessed, and some use the state
 -> does the back button automagically go back to the previous screen in the stack?
 -> how to share an screen shot of the app to using intent?
+-> navController.currentBackStackEntryAsState(): currentBackStackEntryAsState() returns a State wrapping the current NavBackStackEntry? (nullable), which represents the latest entry in the navigation back stack.
+    -> Because it returns a Compose State, composables that read this value will automatically recompose when the navigation back stack changes (e.g., when navigating between screens).
+    -> This is useful to get information about the current destination's route or arguments inside a composable, enabling dynamic UI adjustments based on the current screen.
+    -> useages: showing current screen's title, conditional navigation, Synchronizing Navigation State with Other UI Components - Useful in multi-screen apps with Bottom Navigation or Navigation Drawers where the active tab or drawer item should reflect the current screen.
+-> navController.popBackStack(CupcakeScreen.Start.name, inclusive = false): used to remove destinations from the navigation back stack, effectively navigating back to a previous screen
+    -> pops the current destination off the back stack and navigates aback to the previous destination
+    -> When called without arguments, navController.popBackStack() pops the current destination off the back stack and navigates back to the previous destination
+    -> you can also specify a particular destination route or ID to pop back to , removing all destinations above it on the stack
+    -> it returns a Boolean indicating whether the pop action was successfull
+    -> the inclusive argument controls whether to also remove the specified destination ("StartScreen") itself
+        -> pop everything above the target destination but leave the target destination itself on the stack (you navigate back to it)
+
+-> fun shareOrder(context: Context, subject: String, summary: String) {
+           val intent = Intent(Intent.ACTION_SEND).apply { // creates an Intent with action Intent.ACTION_SEND, which indicates that the app wants to send data to another app
+               type = "text/plain" // The MIME type is set to "text/plain" to specify that the data being shared in plain text
+               putExtra(Intent.EXTRA_SUBJECT, subject) // putting extra data: the title or subject
+               putExtra(Intent.EXTRA_TEXT, summary) // putting extra data: is set to the summary parameter, which contains the main text content to share
+           }
+            val chooser = Intent.createChooser(intent, context.getString(R.string.new_cupcake_order)) // wraps the intent, allowing the user to pick their preferred app to share the contentwith.
+            context.startActivity(chooser)
+       }
+
+
+
+    -> specifying custome apps as Intents:
+    fun showCustomShareChooser(context: Context, textToShare: String) {
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, textToShare)
+        }
+
+        // Query PackageManager for apps that can handle ACTION_SEND
+        val pm = context.packageManager
+        val resInfoList = pm.queryIntentActivities(sendIntent, 0)
+
+        // Filter your apps of interest by package name or other criteria
+        val targetedShareIntents = ArrayList<Intent>()
+        for (resInfo in resInfoList) {
+            val packageName = resInfo.activityInfo.packageName
+            // Example: only allow WhatsApp and Messenger as options
+            if (packageName.contains("com.whatsapp") || packageName.contains("com.facebook.orca")) {
+                val targetedIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, textToShare)
+                    setPackage(packageName)
+                }
+                targetedShareIntents.add(targetedIntent)
+            }
+        }
+
+        // Create a chooser with initial intents as your filtered list
+        val chooserIntent = Intent.createChooser(targetedShareIntents.removeAt(0), "Share via")
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, targetedShareIntents.toTypedArray())
+
+        context.startActivity(chooserIntent)
+    }
+
+
+
+
